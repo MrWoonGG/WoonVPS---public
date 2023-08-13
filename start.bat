@@ -12,11 +12,29 @@ sc start audiosrv >nul
 ICACLS C:\Windows\Temp /grant administrator:F >nul
 ICACLS C:\Windows\installer /grant administrator:F >nul
 echo  Successfully Installed !, If the RDP is Dead, Please Rebuild Again! 
-echo IP:
-tasklist | find /i "ngrok.exe" >Nul && curl -s localhost:4040/api/tunnels | jq -r .tunnels[0].public_url || echo "Unable to get NGROK tunnel, make sure NGROK_AUTH_TOKEN is correct in Settings > Secrets > Repository secret. Maybe your previous VM is still running: https://dashboard.ngrok.com/status/tunnels "
+@echo off
+setlocal
+
+for /f "tokens=*" %%i in ('tasklist ^| find /i "ngrok.exe"') do (
+    set "output=%%i"
+)
+
+REM Проверяем, была ли найдена строка с "ngrok.exe"
+if defined output (
+    for /f "tokens=*" %%j in ('curl -s localhost:4040/api/tunnels ^| jq -r .tunnels[0].public_url') do (
+        set "ipAddress=%%j"
+    )
+) else (
+    set "ipAddress=Unable to get NGROK tunnel"
+)
+
+echo IP: 
+echo %ipAddress%
 echo Username: administrator
 echo Password: MrWoonTT12
 echo .
 echo  RDP By MrWoon
 echo   Connect to Your RDP !
 ping -n 10 127.0.0.1 >nul
+
+endlocal
